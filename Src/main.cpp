@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <STM32UptimeInfoAdapter.h>
+#include <Timer.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,6 +55,16 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void toggleLed();
+
+class LedBlinkTimerAdapter : public TimerAdapter
+{
+  void timeExpired()
+  {
+    toggleLed();
+  }
+};
+const unsigned long int cLedBlinkTimeMillis = 200;
 
 /* USER CODE END PFP */
 
@@ -68,6 +80,9 @@ static void MX_USART2_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
+  UptimeInfo::Instance()->setAdapter(new STM32UptimeInfoAdapter());
+  new Timer(new LedBlinkTimerAdapter(), Timer::IS_RECURRING, cLedBlinkTimeMillis);
 
   /* USER CODE END 1 */
   
@@ -100,7 +115,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    scheduleTimers();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -216,6 +231,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void toggleLed()
+{
+  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+}
 
 /* USER CODE END 4 */
 
